@@ -7,7 +7,7 @@
 
 module REMProof where
 
-import Prelude hiding (rem)
+import Prelude
 --import qualified Prelude
 
 --import Language.Haskell.Liquid.ProofCombinators
@@ -20,15 +20,15 @@ import Prelude hiding (rem)
 {-@ type NonZeroNat = {v:Nat | v /= 0} @-}
 
 
-{-@ rem :: Nat -> NonZeroNat -> Nat @-}
-rem :: Int -> Int -> Int
-rem x n | x == 0    = 0
-        | x > n     = rem (x - n) n
+{-@ remainder :: Nat -> NonZeroNat -> Nat @-}
+remainder :: Int -> Int -> Int
+remainder x n | x == 0    = 0
+        | x > n     = remainder (x - n) n
         | otherwise = x
----rem x n | n == 0    = die "divide by zero"
+---remainder x n | n == 0    = die "divide by zero"
 
 -- this causes the crash
-{-@ reflect rem @-}
+{-@ reflect remainder @-}
 
 
 {-@ type RemDecreases = x:Nat -> y:Nat -> {rem x y <= x} @-}
