@@ -3,41 +3,44 @@
 {-@ LIQUID "--totality"        @-}
 {-@ LIQUID "--total-Haskell" @-}
 
-
-
 module REMProof where
 
 import Prelude
---import qualified Prelude
-
---import Language.Haskell.Liquid.ProofCombinators
-
-{- die :: {v:_ | false} -> a @-}
---die msg = error msg
-
-{- reflect die @-}
+import Language.Haskell.Liquid.ProofCombinators
 
 {-@ type NonZeroNat = {v:Nat | v /= 0} @-}
 
-
 {-@ remainder :: Nat -> NonZeroNat -> Nat @-}
 remainder :: Int -> Int -> Int
-remainder x n | x == 0    = 0
-        | x > n     = remainder (x - n) n
-        | otherwise = x
----remainder x n | n == 0    = die "divide by zero"
+remainder x y | x == 0    = 0
+              | x > y     = remainder (x - y) y
+              | otherwise = x
 
--- this causes the crash
 {-@ reflect remainder @-}
 
+{-@ type RemDecreases = x:Nat -> y:NonZeroNat -> {remainder x y <= x} @-}
 
-{-@ type RemDecreases = x:Nat -> y:Nat -> {rem x y <= x} @-}
-
-{- remDecreases :: RemDecreases @-}
---remDecreases :: Int -> Int -> Proof
---remDecreases _ _ = trivial *** QED
-
-
+{-@ remDecreases :: RemDecreases @-}
+remDecreases :: Int -> Int -> Proof
+remDecreases x y
+    | x == 0
+    = remainder 0 y
+    ==. 0
+    <.  0
+    *** QED
+    
+    | x > y
+    = remainder x y
+    ==. remainder (x - y) y
+    <.  (x - y)             ∵ remDecreases (x - y) y
+    <.  x
+    *** QED
+    
+    | otherwise
+    = remainder x y
+    ==. x
+    <.  x
+    *** QED
 
 {-@ predicate Divides x y = (rem x y == 0) @-}
 
