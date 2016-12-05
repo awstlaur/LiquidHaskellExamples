@@ -17,9 +17,9 @@ import qualified Prelude
 
 {-@ type NonNegInt = {v:Int | v >= 0} @-}
 
-{-@ measure _lcm :: Int -> Int -> Int @-}
+{-@ measure lcmLH :: Int -> Int -> Int @-}
 
-{-@ assume lcm :: x:NonNegInt -> y:NonNegInt -> {z:NonNegInt | z == _lcm x y} @-}
+{-@ assume lcm :: x:NonNegInt -> y:NonNegInt -> {z:NonNegInt | z == lcmLH x y} @-}
 lcm :: Int -> Int -> Int
 lcm = Prelude.lcm
 
@@ -48,7 +48,7 @@ cycleZip x y = zip (cycle x) (cycle y)
 {-@ takeLcmCycleZip ::
     x:{v:[a]   | (len v) > 0 } ->
     y:{v:[b]   | (len v) > 0 } ->
-    {v:[(a,b)] | (len v) = _lcm (len x) (len y) }
+    {v:[(a,b)] | (len v) = lcmLH (len x) (len y) }
 @-}
 takeLcmCycleZip :: [a] -> [b] -> [(a,b)]
 takeLcmCycleZip x y = take (lcm (length x) (length y)) $ cycleZip x y
