@@ -3,10 +3,6 @@
 {-@ LIQUID "--totality"        @-}
 {-@ LIQUID "--total-Haskell" @-}
 
-{-
-    THIS DOES NOT WORK YET
--}
-
 module GCDProof where
 
 import Prelude hiding (gcd)
@@ -23,8 +19,8 @@ import Language.Haskell.Liquid.ProofCombinators
 {-@ remainder :: x:Nat -> y:NonZeroNat -> {v:Nat | v < y} / [x, y] @-}
 remainder :: Int -> Int -> Int
 remainder x y
-  | x < y = x
-  | otherwise = remainder (x - y) y 
+    | x < y = x
+    | otherwise = remainder (x - y) y
 
 {-@ reflect remainder @-}
 
@@ -65,7 +61,7 @@ gcdIdempotent :: Int -> Proof
 gcdIdempotent x
     = gcd x x
     *** QED
-    
+
 {-@ type GCDCommutative = x:Nat -> y:Nat -> {gcd x y == gcd y x} @-}
 
 -- | Our symmetric definition makes this easy!
@@ -112,5 +108,3 @@ dividesImpliesGCD x y
 {-@ type GCDAssociative =
     x:Nat -> y:Nat -> z:Nat -> {gcd x (gcd y z) == gcd (gcd x y) z}
 @-}
-
-
