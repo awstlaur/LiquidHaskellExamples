@@ -5,7 +5,7 @@
 
 module REMProof where
 
-import Prelude
+import Prelude hiding(gcd)
 import Language.Haskell.Liquid.ProofCombinators
 
 {-@ type NonZeroNat = {v:Nat | v /= 0} @-}
@@ -35,3 +35,14 @@ remDecreasing x y
     = remainder x y
     <=.  (x - y)         ∵ remNonincreasing (x - y) y
     *** QED
+
+{-@ gcd :: a:Nat -> b:Nat -> Nat @-}
+gcd  :: Int -> Int -> Int
+gcd  x y | x == 0    = y
+         | y == 0    = x
+         | x == y    = x
+         | x > y     = gcd (remainder x y) y
+         | x < y     = gcd x (remainder y x)
+         | otherwise = 0
+
+{-@ reflect gcd @-}
