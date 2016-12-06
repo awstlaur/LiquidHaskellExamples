@@ -12,9 +12,10 @@ module GCDProof where
 import Prelude hiding (gcd)
 import Language.Haskell.Liquid.ProofCombinators
 
--- | Definitions
+-- | Definitions -------------------------------------------------------------
 
 -- definitions of remainder and gcd' were modified from
+-- the definitions of mod and gcd (respectively) found at
 -- goto.ucsd.edu/~rjhala/liquid/haskell/blog/blog/2013/12/14/gcd.lhs/
 
 {-@ remainder :: a:Nat -> b:{v:Nat| 0 < v} -> {v:Nat | v < b} / [a, b] @-}
@@ -42,7 +43,7 @@ gcd a b
 
 {-@ reflect gcd @-}
 
--- | Propositions
+-- | Propositions ------------------------------------------------------------
 
 {-@ type GCDCongruence = i:Nat -> j:Nat -> {i == j => gcd i == gcd j} @-}
 
@@ -51,17 +52,17 @@ gcd a b
 gcdCongruence :: Int -> Int -> Proof
 gcdCongruence _ _ = trivial *** QED
 
-{-@ type GCDIdempotent = x:Nat -> {gcd x x == x} @-}
+{-@ type GCDIdempotent =  @-}
 
-{-@ gcdIdem :: GCDIdempotent @-}
-gcdIdem :: Int -> Proof
-gcdIdem x
+{-@ gcdIdempotent :: x:Nat -> {gcd x x == x} @-}
+gcdIdempotent :: Int -> Proof
+gcdIdempotent x
     = gcd x x
     *** QED
     
 {-@ type GCDCommutative = x:Nat -> y:{Nat | true } -> {gcd x y == gcd y x} @-}
 
 -- | TODO
-{-@ gcdComm :: {true} @-}
-gcdComm :: Int -> Int -> Proof
-gcdComm x y = trivial *** QED
+{-@ gcdCommutative :: {true} @-}
+gcdCommutative :: Int -> Int -> Proof
+gcdCommutative x y = trivial *** QED
