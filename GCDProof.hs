@@ -8,6 +8,9 @@ module GCDProof where
 import Prelude hiding (gcd)
 import Language.Haskell.Liquid.ProofCombinators
 
+{-@ todo :: {true} @-}
+todo = trivial *** QED
+
 -- | Definitions -------------------------------------------------------------
 
 {-@ type NonZeroNat = {v:Nat | v /= 0} @-}
@@ -41,7 +44,7 @@ gcd x y
 
 {-@ reflect gcd @-}
 
--- | Simple Propositions -------------------------------------------------------
+-- | Propositions --------------------------------------------------------------
 
 {-@ type GCDCongruence =
     x0:Nat -> y0:Nat -> x1:Nat -> y1:Nat -> 
@@ -72,10 +75,27 @@ gcdCommutative x y
     ==. gcd  y x
     *** QED
 
--- | More Interesting Propositions ---------------------------------------------
-
+-- | Division is important in number theory!
 {-@ predicate Divides Y X = remainder X Y == 0 @-}
 
+{-@ type DividesImpliesGCD =
+    x:Nat -> y:NonZeroNat -> {Divides y x => gcd x y == y}
+@-}
+
+-- | In order to write a proof of type DividesImpliesGCD,
+-- | first we'll establish a couple lemmas.
+
+-- | Lemma: If y divides x, and x is strictly smaller than y,
+-- | then x must be zero.
+{-@ dividesSmallerImpliesZero ::
+    x:Nat -> y:NonZeroNat -> {x < y && Divides y x => x == 0}
+@-}
+dividesSmallerImpliesZero :: Int -> Int -> Proof
+dividesSmallerImpliesZero x y
+    = remainder x y             -- | Liquid Haskell unfolds this for us
+    *** QED
+
+-- | Lemma: Essentially the thing we want to prove, just for gcd' x y.
 {-@ dividesImpliesGCD' ::
     x:Nat -> y:{v:NonZeroNat | v < x} -> {Divides y x => gcd' x y == y}
 @-}
@@ -83,28 +103,69 @@ dividesImpliesGCD' :: Int -> Int -> Proof
 dividesImpliesGCD' x y
     =   gcd' x y
     ==. gcd' y (remainder x y)
-    ==. gcd' y 0
+    ==. gcd' y 0                -- | Because y divides x
     ==. y
     *** QED
 
-{-@ type DividesImpliesGCD =
-    x:Nat -> y:{v:NonZeroNat | v < x} -> {Divides y x => gcd x y == y}
-@-}
-
+-- | Onto the main show! Each non-trivial case will use a Lemma.
 {-@ dividesImpliesGCD :: DividesImpliesGCD @-}
 dividesImpliesGCD x y
-    =   gcd x y
-    ==. y           ? dividesImpliesGCD' x y
+    | x < y
+    =   gcd  x y
+    ==. gcd' y x
+    ==. gcd' y 0                ? dividesSmallerImpliesZero x y
+    ==. y
     *** QED
 
--- | TODO: Prove this.
+    | x > y
+    =   gcd  x y
+    ==. gcd' x y
+    ==. y                       ? dividesImpliesGCD' x y
+    *** QED
+
+    | otherwise
+    = gcd x y
+    ==. x
+    *** QED
+
+-- | Now let's go the other way.
+{-@ type GCDImpliesDivides =
+        x:Nat -> y:{v:NonZeroNat | v < x} -> {gcd' x y == y => Divides y x}
+@-}
+
+-- | TODO: figure this out!
+{-@ gcdImpliesDivides :: {true} @-}
+gcdImpliesDivides :: Int -> Int -> Proof
+gcdImpliesDivides x y = todo
+    -- =   y
+    -- ==. gcd' x y
+    -- ==. gcd' y (remainder x y)
+    -- ==. gcd' y 0
+    -- ==. y
+    -- *** QED
+
+-- | As a corollary, for POSITIVE Nats,
+-- | y divides x if and only if gcd x y equals y.
+{-@ type GCDIffDivides =
+    x:NonZeroNat -> y:NonZeroNat -> {Divides y x <=> gcd x y == y}
+@-}
+
+{-@ gcdIffDivides :: {true} @-}
+gcdIffDivides :: Int -> Int -> Proof
+gcdIffDivides x y = todo
+
+-- | More interesting stuff --------------------------------------------------
+
 {-@ type GCDDivides = x:Nat -> y:Nat -> {Divides (gcd x y) x} @-}
 
--- {-@ gcdDivides :: GCDDivides @-}
--- gcdDivides :: Int -> Int -> Proof
--- gcdDivides x y = trivial *** QED
+{-@ gcdDivides :: {true} @-}
+gcdDivides :: Int -> Int -> Proof
+gcdDivides x y = todo
 
--- | TODO: Prove this.
 {-@ type GCDAssociative =
     x:Nat -> y:Nat -> z:Nat -> {gcd x (gcd y z) == gcd (gcd x y) z}
 @-}
+
+{-@ gcdAssociative :: {true} @-}
+gcdAssociative :: Int -> Int -> Int -> Proof
+gcdAssociative x y z = todo
