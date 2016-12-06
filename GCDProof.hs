@@ -9,68 +9,47 @@
 
 module GCDProof where
 
-import Prelude hiding (gcd, rem)
-import qualified Prelude
-
---import Language.Haskell.Liquid.Prelude
+import Prelude hiding (gcd)
 import Language.Haskell.Liquid.ProofCombinators
 
 -- | Definitions
 
-{-@ rem :: Nat -> Nat -> Nat @-}
-rem = Prelude.rem
+-- definitions of remainder and gcd' were modified from
+-- goto.ucsd.edu/~rjhala/liquid/haskell/blog/blog/2013/12/14/gcd.lhs/
 
+{-@ remainder :: a:Nat -> b:{v:Nat| 0 < v} -> {v:Nat | v < b} / [a, b] @-}
+remainder :: Int -> Int -> Int
+remainder a b
+  | a < b = a
+  | otherwise = remainder (a - b) b
 
--- github.com/ucsd-progsys/liquidhaskell/blob/develop/tests/pos/GCD.hs
+{-@ reflect remainder @-}
+
+{-@ gcd' :: a:Nat -> b:{v:Nat | v < a} -> Nat / [a,b] @-}
+gcd' :: Int -> Int -> Int
+gcd' a b
+    | b == 0    = a
+    | otherwise = gcd' b (remainder a b)
+
+{-@ reflect gcd' @-}
+
 {-@ gcd :: a:Nat -> b:Nat -> Nat / [a, b] @-}
-gcd  :: Int -> Int -> Int
-gcd  a b | a == 0    = b
-         | b == 0    = a
-         | a == b    = a
-         | a > b     = gcd (a - b) b
-         | a < b     = gcd a (b - a)
-         | otherwise = 0
-
-
--- | Refinement Reflection
+gcd :: Int -> Int -> Int
+gcd a b
+    | a < b     = gcd' b a
+    | a > b     = gcd' a b
+    | otherwise = a
 
 {-@ reflect gcd @-}
 
--- | Step 1: Definition
+-- | Propositions
 
-{-@ type GCDCongruence :: i:Nat -> j:Nat -> {i == j => gcd i == gcd j} @-}
+{-@ type GCDCongruence = i:Nat -> j:Nat -> {i == j => gcd i == gcd j} @-}
 
-{-@ gcdCongruence :: GcdCongruence @-}
+-- | TODO
+{-@ gcdCongruence :: {true} @-}
 gcdCongruence :: Int -> Int -> Proof
 gcdCongruence _ _ = trivial *** QED
-
--- | Step 2: Reflection
-
--- | Step 3: Application
-
-{-@ type GCDNineSix = { gcd 9 6 == 3 } @-}
-
-{-@ gcdNineSix :: GCDNineSix @-}
-gcdNineSix :: Proof
-gcdNineSix = [gcd 3 3, gcd 3 6, gcd 9 6] *** QED
-
-{-@ gcdNineSixPretty :: GCDNineSix @-}
-gcdNineSixPretty :: Proof
-gcdNineSixPretty
-    = gcd 9 6
-    ==. gcd 3 6
-    ==. gcd 3 3
-    *** QED
-    
-{-@ gcdNineFifteen :: {gcd 9 15 == 3} @-}
-gcdNineFifteen :: Proof
-gcdNineFifteen
-    =   gcd 9 15
-    ==. gcd 9 6     
-    ==. 3           ∵ gcdNineSix
-    *** QED
-    
--- | Props and Such
 
 {-@ type GCDIdempotent = x:Nat -> {gcd x x == x} @-}
 
@@ -82,35 +61,7 @@ gcdIdem x
     
 {-@ type GCDCommutative = x:Nat -> y:{Nat | true } -> {gcd x y == gcd y x} @-}
 
-{-@ gcdComm :: GCDCommutative @-}
+-- | TODO
+{-@ gcdComm :: {true} @-}
 gcdComm :: Int -> Int -> Proof
-gcdComm x y
-    | x == 0
-        = gcd 0 y 
-        ==. y 
-        ==. gcd y 0
-        *** QED
-
-    | y == 0
-        = gcd x 0 
-        ==. x
-        ==. gcd 0 x
-        *** QED
-        
-    | x < y
-        = gcd x y
-        ==. gcd x (y - x)
-        ==. gcd (y - x) x   ∵ gcdComm x (y - x)
-        ==. gcd y x         
-        *** QED
-
-    | x > y
-        = gcd x y
-        ==. gcd (x - y) y
-        ==. gcd y (x - y)   ∵ gcdComm y (x - y)
-        ==. gcd y x
-        *** QED
-    
-    | otherwise
-        = trivial
-        *** QED
+gcdComm x y = trivial *** QED
