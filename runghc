@@ -1,0 +1,3 @@
+#!/bin/sh
+RUNGHC="$(./get-stack-command.sh) runghc"
+$RUNGHC $@
