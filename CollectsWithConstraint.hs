@@ -15,6 +15,8 @@ module CollectsWithConstraint where
 import Prelude hiding(length)
 import qualified Prelude
 
+import Language.Haskell.Liquid.Prelude(liquidAssert)
+
 -- | With Functional dependency -----------------------------------------------
 
 data ListRecord a = ListRecord{
@@ -114,3 +116,18 @@ instance CollectsTF (ListRecordTF a) where
 
   {-@ instance measure toListTF :: (ListRecord a) -> [Elem (ListRecordTF a)] @-}
   toListTF = elemsTF
+
+-- | CollectsTF as a constraint ----------------------------------------------
+
+-- | TODO: Figure out bizarre error here.
+
+{-@ class (CollectsTF ce) => Foo ce where
+    getFoo :: ce -> {v:[Elem ce] | lengthTF v == 0}
+@-}
+class (CollectsTF ce) => Foo ce where
+    getFoo :: ce -> [Elem ce]
+
+instance Foo (ListRecordTF a) where
+    getFoo _ = getEmptyTF
+
+-- check = liquidAssert $ lengthTF (getFoo ListRecordTF{elemsTF = [1,2]}) == 0
