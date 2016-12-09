@@ -12,11 +12,10 @@ import Language.Haskell.Liquid.ProofCombinators
 data LList a = Nil | Cons a (LList a)
 
 {-@ measure sz @-}
+{-@ sz :: LList a -> Nat @-}
 sz :: LList a -> Int
 sz Nil         = 0
 sz (Cons x xs) = 1 + sz xs
-
-{-@ invariant {v:LList a | sz v >= 0} @-}
 
 {-@ measure inf :: Int @-}
 {-@ invariant {v:Int | v < inf} @-}
@@ -31,5 +30,5 @@ tailInfProof l@(Cons x xs)
 
 {-@ takeFromInfList :: xs:(LListN a inf) -> n:Nat -> (LListN a n) @-}
 takeFromInfList :: (LList a) -> Int -> (LList a)
-takeFromInfList _ 0           = Nil
-takeFromInfList l@(Cons x xs) n = Cons x (takeFromInfList xs (n - 1))
+takeFromInfList _ 0             = Nil
+takeFromInfList l@(Cons x xs) n = Cons (byTheorem x (tailInfProof l)) (takeFromInfList xs (n - 1))
