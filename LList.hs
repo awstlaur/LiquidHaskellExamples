@@ -4,7 +4,7 @@
 
 -- | TODO: Prove that take <infinite list> n always produces an LList of sz n
 
-import Prelude hiding(map,concat,take,cycle,max)
+import Prelude hiding(head,tail,map,concat,take,cycle,max)
 
 import Language.Haskell.Liquid.Prelude hiding(safeZipWith)
 import Language.Haskell.Liquid.ProofCombinators
@@ -17,6 +17,16 @@ import Language.Haskell.Liquid.ProofCombinators
 
 {-@ data LList [sz] a = Nil | Cons {hd :: a, tl :: LList a} @-}
 data LList a = Nil | Cons a (LList a) deriving (Eq)
+
+-- {-@ head :: (NonEmptyLList a) -> a @-}
+-- head :: LList a -> a
+-- head Nil        = liquidError "head Nil"
+-- head (Cons x _) = x
+--
+-- {-@ tail :: l:(NonEmptyLList a) -> {ls:LList a | sz l == (1 + sz ls)} @-}
+-- tail :: LList a -> LList a
+-- tail Nil         = liquidError "tail Nil"
+-- tail (Cons _ xs) = xs
 
 {-@ measure sz @-}
 sz :: LList a -> Int
@@ -45,6 +55,7 @@ concat (Cons l ls) = append l (concat ls)
 
 {-@ measure inf :: Int @-}
 {-@ invariant {v:Int | v < inf} @-}
+{-@ invariant {v:Int | 1 + v == inf => v == inf} @-}
 
 -- some stuff from:
 -- github.com/ucsd-progsys/liquidhaskell/blob/develop/tests/todo/InfiniteLists.hs
@@ -54,7 +65,7 @@ cycle :: LList a -> LList a
 cycle Nil = liquidError "cycle: empty list"
 cycle xs  = xs' where xs' = append xs xs'
 
--- TODO
+-- TODO?
 {- take :: xs:(LList a) -> n:{v:Nat | v < sz xs } -> {l:(LList a) | sz xs == inf => sz l == n } @-}
 {-@ take :: xs:(LList a) -> {v:Nat | v < sz xs } -> (LList a) @-}
 take :: (LList a) -> Int -> (LList a)
@@ -62,10 +73,24 @@ take Nil _ = liquidError "take: Nil"
 take _ 0 = Nil
 take (Cons x xs) i = Cons x (take xs (i - 1))
 
+-- | Liquid Haskell automatically generates selectors like select_Cons_2
+{-@ tailInfProof :: l:(LListN a inf) -> {inf == sz (select_Cons_2 l)} @-}
+tailInfProof :: LList a -> Proof
+tailInfProof l@(Cons x xs)
+    = sz l
+    ==. 1 + sz xs
+    *** QED
+
+{- takeFromInfList :: xs:(LListN a inf) -> n:Nat -> (LListN a n) @-}
+{-@ takeFromInfList :: xs:(LListN a inf) -> n:Nat -> LList a @-}
+takeFromInfList :: (LList a) -> Int -> (LList a)
+takeFromInfList _ 0           = Nil
+takeFromInfList (Cons x xs) n = Cons x (takeFromInfList xs (n - 1))
+
 {- cycletake :: n:Nat -> (NonEmptyLList a) -> (LListN a n) -}
-{-@ cycletake :: Nat -> (NonEmptyLList a) -> LList a @-}
-cycletake :: Int -> LList a -> LList a
-cycletake n l = take (cycle l) n
+{- cycletake :: Nat -> (NonEmptyLList a) -> LList a @-}
+-- cycletake :: Int -> LList a -> LList a
+-- cycletake n l = take (cycle l) n
 
 -- modified from Language.Haskell.Liquid.Prelude.safeZipWith
 {-@ assert safeZipWith ::
