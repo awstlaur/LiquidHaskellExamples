@@ -54,8 +54,8 @@ cycle :: LList a -> LList a
 cycle Nil = liquidError "cycle: empty list"
 cycle xs  = xs' where xs' = append xs xs'
 
--- | TODO
-{- take :: xs:(LList a) -> {v:Nat | ((isInf xs) || (v < (sz xs))) } -> (LList a) @-}
+-- TODO
+{- take :: xs:(LList a) -> n:{v:Nat | v < sz xs } -> {l:(LList a) | sz xs == inf => sz l == n } @-}
 {-@ take :: xs:(LList a) -> {v:Nat | v < sz xs } -> (LList a) @-}
 take :: (LList a) -> Int -> (LList a)
 take Nil _ = liquidError "take: Nil"
